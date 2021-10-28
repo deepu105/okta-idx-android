@@ -108,6 +108,7 @@ internal data class Authenticator(
     val id: String? = null,
     val type: String,
     val key: String? = null,
+    val credentialId: String? = null,
     val methods: List<Map<String, String>>? = null,
     val settings: Map<String, JsonElement>? = null,
     val contextualData: Map<String, JsonElement>? = null,

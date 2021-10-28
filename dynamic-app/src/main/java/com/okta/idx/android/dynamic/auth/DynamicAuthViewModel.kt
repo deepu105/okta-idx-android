@@ -35,6 +35,8 @@ import com.okta.idx.kotlin.dto.IdxRecoverTrait
 import com.okta.idx.kotlin.dto.IdxRemediation
 import com.okta.idx.kotlin.dto.IdxResendTrait
 import com.okta.idx.kotlin.dto.IdxResponse
+import com.okta.idx.kotlin.dto.IdxSecurityKeyChallengeTrait
+import com.okta.idx.kotlin.dto.IdxSecurityKeyEnrollmentTrait
 import com.okta.idx.kotlin.dto.IdxTotpTrait
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -141,6 +143,8 @@ internal class DynamicAuthViewModel : ViewModel() {
             }
             fields += remediation.asDynamicAuthFieldResendAction()
             fields += remediation.asDynamicAuthFieldActions()
+            fields += remediation.asDynamicAuthFieldSecurityKeyEnrollment()
+            fields += remediation.asDynamicAuthFieldSecurityKeyChallenge()
             remediation.startPolling()
         }
         fields += response.recoverDynamicAuthFieldAction()
@@ -216,6 +220,13 @@ internal class DynamicAuthViewModel : ViewModel() {
     }
 
     private fun IdxRemediation.asDynamicAuthFieldActions(): List<DynamicAuthField> {
+        if (authenticators.trait<IdxSecurityKeyEnrollmentTrait>() != null) {
+            return emptyList()
+        }
+        if (authenticators.trait<IdxSecurityKeyChallengeTrait>() != null) {
+            return emptyList()
+        }
+
         val title = when (type) {
             IdxRemediation.Type.SKIP -> "Skip"
             IdxRemediation.Type.ENROLL_PROFILE, IdxRemediation.Type.SELECT_ENROLL_PROFILE -> "Sign Up"
@@ -264,6 +275,21 @@ internal class DynamicAuthViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    private fun IdxRemediation.asDynamicAuthFieldSecurityKeyEnrollment(): List<DynamicAuthField> {
+        val trait = authenticators.trait<IdxSecurityKeyEnrollmentTrait>() ?: return emptyList()
+        return listOf(DynamicAuthField.SecurityKeyEnrollment(trait, this) {
+            proceed(this)
+        })
+    }
+
+    private fun IdxRemediation.asDynamicAuthFieldSecurityKeyChallenge(): List<DynamicAuthField> {
+        val trait = authenticators.trait<IdxSecurityKeyChallengeTrait>() ?: return emptyList()
+        // TODO: Add allow credentials (from enrolled authenticators credentialsId)
+        return listOf(DynamicAuthField.SecurityKeyChallenge(trait, this) {
+            proceed(this)
+        })
     }
 
     private fun cancelPolling() {

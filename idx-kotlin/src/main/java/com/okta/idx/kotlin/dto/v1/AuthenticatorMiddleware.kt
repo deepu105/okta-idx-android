@@ -20,26 +20,34 @@ import com.okta.idx.kotlin.dto.IdxPollTrait
 import com.okta.idx.kotlin.dto.IdxProfileTrait
 import com.okta.idx.kotlin.dto.IdxRecoverTrait
 import com.okta.idx.kotlin.dto.IdxResendTrait
+import com.okta.idx.kotlin.dto.IdxSecurityKeyChallengeTrait
+import com.okta.idx.kotlin.dto.IdxSecurityKeyEnrollmentTrait
 import com.okta.idx.kotlin.dto.IdxSendTrait
 import com.okta.idx.kotlin.dto.IdxTotpTrait
 import com.okta.idx.kotlin.dto.IdxTraitCollection
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.int
 
 internal fun Response.toIdxAuthenticatorPathPairs(
     json: Json,
 ): List<AuthenticatorPathPair> {
     val result = mutableListOf<AuthenticatorPathPair>()
     currentAuthenticatorEnrollment?.value?.apply {
-        result += toIdxAuthenticator(json, IdxAuthenticator.State.ENROLLING).toPathPair("$.currentAuthenticatorEnrollment")
+        result += toIdxAuthenticator(json, IdxAuthenticator.State.ENROLLING)
+            .toPathPair("$.currentAuthenticatorEnrollment")
     }
     currentAuthenticator?.value?.apply {
-        result += toIdxAuthenticator(json, IdxAuthenticator.State.AUTHENTICATING).toPathPair("$.currentAuthenticator")
+        result += toIdxAuthenticator(json, IdxAuthenticator.State.AUTHENTICATING)
+            .toPathPair("$.currentAuthenticator")
     }
     recoveryAuthenticator?.value?.apply {
-        result += toIdxAuthenticator(json, IdxAuthenticator.State.RECOVERY).toPathPair("$.recoveryAuthenticator")
+        result += toIdxAuthenticator(json, IdxAuthenticator.State.RECOVERY)
+            .toPathPair("$.recoveryAuthenticator")
     }
     authenticatorEnrollments?.value?.let {
         it.forEachIndexed { index, authenticator ->
@@ -68,12 +76,15 @@ internal fun Authenticator.toIdxAuthenticator(
     poll?.toIdxRemediation(json)?.let { traits += IdxPollTrait(it, poll.refresh?.toInt() ?: 0, id) }
     profile?.let { traits += IdxProfileTrait(it) }
     contextualData?.toQrCodeTrait()?.let { traits += it }
+    contextualData?.toSecurityKeyEnrollmentTrait()?.let { traits += it }
+    contextualData?.toSecurityKeyChallengeTrait()?.let { traits += it }
 
     return IdxAuthenticator(
         id = id,
         displayName = displayName,
         type = type.asIdxAuthenticatorType(),
         key = key,
+        credentialId = credentialId,
         state = state,
         methods = methods.asIdxAuthenticatorMethods(),
         methodNames = methods.asMethodNames(),
@@ -140,6 +151,112 @@ private fun Map<String, JsonElement>.toQrCodeTrait(): IdxAuthenticator.Trait? {
     val imageData = qrCode.stringValue("href") ?: return null
     val sharedSecret = (get("sharedSecret") as? JsonPrimitive?)?.content
     return IdxTotpTrait(imageData = imageData, sharedSecret = sharedSecret)
+}
+
+private fun Map<String, JsonElement>.toSecurityKeyEnrollmentTrait(): IdxAuthenticator.Trait? {
+    val activationData = get("activationData") as? JsonObject? ?: return null
+    val relyingParty = activationData["rp"] as? JsonObject? ?: return null
+    val user = activationData["user"] as? JsonObject? ?: return null
+    val publicKeyCredentialParameters =
+        activationData["pubKeyCredParams"] as? JsonArray? ?: return null
+    val authenticatorSelection =
+        activationData["authenticatorSelection"] as? JsonObject? ?: return null
+    val u2fParameters = activationData["u2fParams"] as? JsonObject? ?: return null
+    val excludeCredentials = activationData["excludeCredentials"] as? JsonArray? ?: return null
+    val challenge = activationData.stringValue("challenge")
+    val attestation = activationData.stringValue("attestation")
+
+    return IdxSecurityKeyEnrollmentTrait(
+        challenge = challenge ?: return null,
+        attestation = attestation ?: return null,
+        relyingParty = relyingParty.asRelyingParty() ?: return null,
+        user = user.asUser() ?: return null,
+        publicKeyCredentialParameters = publicKeyCredentialParameters.asPublicKeyCredentialParameters()
+            ?: return null,
+        authenticatorSelection = authenticatorSelection.asAuthenticatorSelection() ?: return null,
+        u2fParameters = u2fParameters.asU2fParameters() ?: return null,
+        excludeCredentials = excludeCredentials.asExcludeCredentials() ?: return null
+    )
+}
+
+private fun JsonObject.asRelyingParty(): IdxSecurityKeyEnrollmentTrait.RelyingParty? {
+    return IdxSecurityKeyEnrollmentTrait.RelyingParty(
+        name = stringValue("name") ?: return null,
+    )
+}
+
+private fun JsonObject.asUser(): IdxSecurityKeyEnrollmentTrait.User? {
+    return IdxSecurityKeyEnrollmentTrait.User(
+        id = stringValue("id") ?: return null,
+        name = stringValue("name") ?: return null,
+        displayName = stringValue("displayName") ?: return null,
+    )
+}
+
+private fun JsonArray.asPublicKeyCredentialParameters(): List<IdxSecurityKeyEnrollmentTrait.PublicKeyCredentialParameter>? {
+    return map { jsonElement ->
+        val jsonObject = jsonElement as? JsonObject? ?: return null
+        jsonObject.asPublicKeyCredentialParameter() ?: return null
+    }
+}
+
+private fun JsonObject.asPublicKeyCredentialParameter(): IdxSecurityKeyEnrollmentTrait.PublicKeyCredentialParameter? {
+    val type = stringValue("type") ?: return null
+    val algorithm = get("alg") as? JsonPrimitive? ?: return null
+    return IdxSecurityKeyEnrollmentTrait.PublicKeyCredentialParameter(
+        type = type,
+        algorithm = algorithm.int,
+    )
+}
+
+private fun JsonObject.asAuthenticatorSelection(): IdxSecurityKeyEnrollmentTrait.AuthenticatorSelection? {
+    val userVerification = stringValue("userVerification") ?: return null
+    val requireResidentKey = get("requireResidentKey") as? JsonPrimitive? ?: return null
+    return IdxSecurityKeyEnrollmentTrait.AuthenticatorSelection(
+        userVerification = userVerification,
+        requireResidentKey = requireResidentKey.boolean,
+    )
+}
+
+private fun JsonObject.asU2fParameters(): IdxSecurityKeyEnrollmentTrait.U2fParameters? {
+    val appId = stringValue("appid") ?: return null
+    return IdxSecurityKeyEnrollmentTrait.U2fParameters(
+        appId = appId,
+    )
+}
+
+private fun JsonArray.asExcludeCredentials(): List<IdxSecurityKeyEnrollmentTrait.ExcludeCredential>? {
+    return map { jsonElement ->
+        val jsonObject = jsonElement as? JsonObject? ?: return null
+        jsonObject.asExcludeCredential() ?: return null
+    }
+}
+
+private fun JsonObject.asExcludeCredential(): IdxSecurityKeyEnrollmentTrait.ExcludeCredential? {
+    val transports = get("transports") as? JsonArray? ?: return null
+    return IdxSecurityKeyEnrollmentTrait.ExcludeCredential(
+        id = stringValue("id") ?: return null,
+        type = stringValue("type") ?: return null,
+        transport = transports.asTransportList() ?: return null
+    )
+}
+
+private fun JsonArray.asTransportList(): List<String>? {
+    return map { jsonElement ->
+        val jsonPrimitive = jsonElement as? JsonPrimitive? ?: return null
+        jsonPrimitive.content
+    }
+}
+
+private fun Map<String, JsonElement>.toSecurityKeyChallengeTrait(): IdxAuthenticator.Trait? {
+    val challengeData = get("challengeData") as? JsonObject? ?: return null
+    val extensions = challengeData["extensions"] as? JsonObject? ?: return null
+
+    return IdxSecurityKeyChallengeTrait(
+        challenge = challengeData.stringValue("challenge") ?: return null,
+        userVerification = challengeData.stringValue("userVerification") ?: return null,
+        appId = extensions.stringValue("appid") ?: return null,
+    )
 }
 
 private fun JsonObject.stringValue(key: String): String? {

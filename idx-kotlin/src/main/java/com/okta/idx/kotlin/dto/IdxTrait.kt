@@ -116,3 +116,50 @@ class IdxTotpTrait internal constructor(
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 }
+
+// TODO: Document.
+class IdxSecurityKeyEnrollmentTrait internal constructor(
+    val challenge: String,
+    val attestation: String,
+    val relyingParty: RelyingParty,
+    val user: User,
+    val publicKeyCredentialParameters: List<PublicKeyCredentialParameter>,
+    val authenticatorSelection: AuthenticatorSelection,
+    val u2fParameters: U2fParameters,
+    val excludeCredentials: List<ExcludeCredential>
+) : IdxAuthenticator.Trait {
+    class PublicKeyCredentialParameter internal constructor(
+        val type: String,
+        val algorithm: Int,
+    )
+
+    class User internal constructor(
+        val id: String,
+        val name: String,
+        val displayName: String,
+    )
+
+    class RelyingParty internal constructor(
+        val name: String,
+    )
+
+    class AuthenticatorSelection internal constructor(
+        val userVerification: String,
+        val requireResidentKey: Boolean,
+    )
+
+    class U2fParameters internal constructor(
+        val appId: String,
+    )
+    class ExcludeCredential internal constructor(
+        val id: String,
+        val type: String,
+        val transport: List<String>,
+    )
+}
+
+class IdxSecurityKeyChallengeTrait internal constructor(
+    val challenge: String,
+    val userVerification: String,
+    val appId: String,
+) : IdxAuthenticator.Trait
