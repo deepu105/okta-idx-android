@@ -16,10 +16,26 @@
 package com.okta.oidc.kotlin.dto
 
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class OidcIntrospectInfo internal constructor(
-    private val json: JsonObject
-)
+    private val json: JsonObject,
+    val active: Boolean
+) {
+    // TODO: Need to come up with a better data structure here.
+    fun asMap(): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        for (entry in json) {
+            val value = entry.value
+            if (value is JsonPrimitive) {
+                map[entry.key] = value.content
+            } else {
+                map[entry.key] = value.toString()
+            }
+        }
+        return map
+    }
+}
 
 // TODO: Sealed class. One for active one for not?
 

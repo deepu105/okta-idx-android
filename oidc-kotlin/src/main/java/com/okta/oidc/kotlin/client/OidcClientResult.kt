@@ -21,6 +21,6 @@ package com.okta.oidc.kotlin.client
 sealed class OidcClientResult<T> {
     /** An error result. */
     data class Error<T> internal constructor(val exception: Exception) : OidcClientResult<T>()
-    /** Result with the expected response. */
-    data class Response<T> internal constructor(val response: T) : OidcClientResult<T>()
+    /** Success with the expected result. */
+    data class Success<T> internal constructor(val result: T) : OidcClientResult<T>()
 }

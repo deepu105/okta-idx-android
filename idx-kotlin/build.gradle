@@ -32,6 +32,7 @@ dependencies {
     api deps.kotlin.stdlib
     api deps.okhttp.core
     api deps.coroutines.android
+    api project(':oidc-kotlin')
 
     implementation deps.kotlin.serialization_json
 

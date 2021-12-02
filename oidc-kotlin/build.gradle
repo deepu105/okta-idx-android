@@ -38,4 +38,13 @@ dependencies {
     testImplementation deps.okhttp.mock_web_server
     testImplementation deps.okhttp.tls
     testImplementation deps.truth
+
+    androidTestImplementation deps.androidx_test.core
+    androidTestImplementation deps.androidx_test.ext_junit
+    androidTestImplementation deps.androidx_test.runner
+    androidTestImplementation deps.androidx_test.rules
+    androidTestImplementation deps.junit
+    androidTestImplementation deps.okhttp.mock_web_server
+    androidTestImplementation deps.okhttp.tls
+    androidTestImplementation deps.truth
 }

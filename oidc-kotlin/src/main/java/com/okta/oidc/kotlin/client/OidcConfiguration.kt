@@ -15,6 +15,7 @@
  */
 package com.okta.oidc.kotlin.client
 
+import com.okta.oidc.OktaSdk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import okhttp3.Call
@@ -42,11 +43,8 @@ class OidcConfiguration(
 //    /** The application's end session redirect URI. */
 //    val endSessionRedirectUri: String,
 
-    /** The Json object to do the decoding from the okta server responses. */
-    val json: Json = defaultJson(),
-
     /** The Call.Factory which makes calls to the okta server. */
-    val okHttpCallFactory: Call.Factory = defaultCallFactory(),
+    okHttpCallFactory: Call.Factory = OktaSdk.okHttpClient,
 
     /** The CoroutineDispatcher which should be used for IO bound tasks. */
     val ioDispatcher: CoroutineContext = Dispatchers.IO,
@@ -62,17 +60,13 @@ class OidcConfiguration(
 
     // TODO: Logging?
 ) {
+    /** The Call.Factory which makes calls to the okta server. */
+    val okHttpCallFactory: Call.Factory = addInterceptor(okHttpCallFactory)
+
+    /** The Json object to do the decoding from the okta server responses. */
+    val json: Json = Json { ignoreUnknownKeys = true }
+
     companion object {
-        private fun defaultJson(): Json {
-            return Json { ignoreUnknownKeys = true }
-        }
-
-        private fun defaultCallFactory(): Call.Factory {
-            return OkHttpClient.Builder()
-                .addInterceptor(OidcUserAgentInterceptor)
-                .build()
-        }
-
         private fun defaultClock(): OidcClock {
             return object : OidcClock {
                 override fun currentTimeMillis(): Long {
@@ -96,6 +90,15 @@ class OidcConfiguration(
                     map.remove(key)
                 }
             }
+        }
+
+        private fun addInterceptor(callFactory: Call.Factory): Call.Factory {
+            if (callFactory is OkHttpClient) {
+                return callFactory.newBuilder()
+                    .addInterceptor(OidcUserAgentInterceptor)
+                    .build()
+            }
+            return callFactory
         }
     }
 }

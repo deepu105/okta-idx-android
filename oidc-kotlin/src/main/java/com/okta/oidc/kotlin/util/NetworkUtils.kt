@@ -64,7 +64,7 @@ private suspend fun <T> OidcConfiguration.internalPerformRequest(
         try {
             val okHttpResponse = okHttpCallFactory.newCall(request).await()
             if (okHttpResponse.isSuccessful) {
-                OidcClientResult.Response(responseHandler(okHttpResponse))
+                OidcClientResult.Success(responseHandler(okHttpResponse))
             } else {
                 OidcClientResult.Error(IOException("Request failed."))
             }

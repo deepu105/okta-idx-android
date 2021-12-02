@@ -19,16 +19,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.okta.idx.android.dynamic.BuildConfig
-import com.okta.idx.android.dynamic.auth.IdxClientConfigurationProvider
-import kotlinx.coroutines.Dispatchers
+import com.okta.oidc.kotlin.client.OidcClient
+import com.okta.oidc.kotlin.client.OidcClientResult
+import com.okta.oidc.kotlin.client.OidcConfiguration
+import com.okta.oidc.kotlin.dto.OidcTokenType
+import com.okta.oidc.kotlin.dto.OidcTokens
 import kotlinx.coroutines.launch
-import okhttp3.FormBody
-import okhttp3.Request
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import timber.log.Timber
-import java.io.IOException
 
 internal class DashboardViewModel : ViewModel() {
     private val _logoutStateLiveData = MutableLiveData<LogoutState>(LogoutState.Idle)
@@ -37,70 +36,61 @@ internal class DashboardViewModel : ViewModel() {
     private val _userInfoLiveData = MutableLiveData<Map<String, String>>(emptyMap())
     val userInfoLiveData: LiveData<Map<String, String>> = _userInfoLiveData
 
+    private var oidcClient: OidcClient? = null
+
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                getClaims()?.let { _userInfoLiveData.postValue(it) }
-            } catch (e: IOException) {
-                Timber.e(e, "User info request failed.")
+        viewModelScope.launch {
+            val configuration = OidcConfiguration(BuildConfig.CLIENT_ID, setOf("openid", "email", "profile", "offline_access"))
+            when (val clientResult = OidcClient.create(configuration, "${BuildConfig.ISSUER}/.well-known/openid-configuration".toHttpUrl())) {
+                is OidcClientResult.Error -> {
+                    Timber.e(clientResult.exception, "Failed to create client")
+                }
+                is OidcClientResult.Success -> {
+                    oidcClient = clientResult.result
+                    oidcClient?.storeTokens(OidcTokens(
+                        tokenType =  TokenViewModel.tokenResponse.tokenType,
+                        expiresIn = TokenViewModel.tokenResponse.expiresIn,
+                        accessToken = TokenViewModel.tokenResponse.accessToken,
+                        scope = TokenViewModel.tokenResponse.scope,
+                        refreshToken = TokenViewModel.tokenResponse.refreshToken,
+                        idToken = TokenViewModel.tokenResponse.idToken,
+                    ))
+                    getUserInfo()
+                }
             }
         }
     }
 
     fun logout() {
+        val client = oidcClient
+        if (client == null) {
+            Timber.d("Client not present.")
+            return
+        }
         _logoutStateLiveData.value = LogoutState.Loading
 
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val refreshToken = TokenViewModel.tokenResponse.refreshToken
-                if (refreshToken != null) {
-                    // Revoking the refresh token revokes both!
-                    revokeToken("refresh_token", refreshToken)
-                } else {
-                    revokeToken("access_token", TokenViewModel.tokenResponse.accessToken)
+        viewModelScope.launch {
+            when (client.revokeToken(OidcTokenType.REFRESH_TOKEN)) {
+                is OidcClientResult.Error -> {
+                    _logoutStateLiveData.postValue(LogoutState.Failed)
                 }
-
-                _logoutStateLiveData.postValue(LogoutState.Success)
-            } catch (e: Exception) {
-                _logoutStateLiveData.postValue(LogoutState.Failed)
+                is OidcClientResult.Success -> {
+                    _logoutStateLiveData.postValue(LogoutState.Success)
+                }
             }
         }
     }
 
-    private fun getClaims(): Map<String, String>? {
-        val accessToken = TokenViewModel.tokenResponse.accessToken
-        val request = Request.Builder()
-            .addHeader("authorization", "Bearer $accessToken")
-            .url("${BuildConfig.ISSUER}/v1/userinfo")
-            .build()
-        val response = IdxClientConfigurationProvider.get().okHttpCallFactory.newCall(request).execute()
-        if (response.isSuccessful) {
-            val parser = ObjectMapper().createParser(response.body?.byteStream())
-            val json = parser.readValueAsTree<JsonNode>()
-            val map = mutableMapOf<String, String>()
-            for (entry in json.fields()) {
-                map[entry.key] = entry.value.asText()
+    private suspend fun getUserInfo() {
+        when (val userInfoResult = oidcClient?.getUserInfo()) {
+            is OidcClientResult.Error -> {
+                Timber.e(userInfoResult.exception, "Failed to fetch user info.")
+                _userInfoLiveData.postValue(emptyMap())
             }
-            return map
+            is OidcClientResult.Success -> {
+                _userInfoLiveData.postValue(userInfoResult.result.asMap())
+            }
         }
-
-        return null
-    }
-
-    private fun revokeToken(tokenType: String, token: String) {
-        val formBody = FormBody.Builder()
-            .add("client_id", BuildConfig.CLIENT_ID)
-            .add("token_type_hint", tokenType)
-            .add("token", token)
-            .build()
-
-        val request = Request.Builder()
-            .url("${BuildConfig.ISSUER}/v1/revoke")
-            .post(formBody)
-            .build()
-
-        val response = IdxClientConfigurationProvider.get().okHttpCallFactory.newCall(request).execute()
-        Timber.d("Revoke Token Response: %s", response)
     }
 
     fun acknowledgeLogoutSuccess() {

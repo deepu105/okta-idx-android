@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.oidc.kotlin.client
+package com.okta.oidc
 
-// TODO: Document
-interface OidcStorage {
-    suspend fun save(key: String, value: String)
-    suspend fun get(key: String): String?
-    suspend fun delete(key: String)
+import okhttp3.Call
+import okhttp3.OkHttpClient
+
+object OktaSdk {
+    var okHttpClient: Call.Factory by OneTimeSetOrLazyGet { OkHttpClient() }
 }

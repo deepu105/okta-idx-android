@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.oidc.kotlin.client
+package com.okta.oidc.kotlin.dto
 
-// TODO: Document
-interface OidcStorage {
-    suspend fun save(key: String, value: String)
-    suspend fun get(key: String): String?
-    suspend fun delete(key: String)
+enum class OidcTokenType {
+    REFRESH_TOKEN, ACCESS_TOKEN
 }

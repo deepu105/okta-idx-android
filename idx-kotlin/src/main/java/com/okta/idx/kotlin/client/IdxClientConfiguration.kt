@@ -15,6 +15,7 @@
  */
 package com.okta.idx.kotlin.client
 
+import com.okta.oidc.OktaSdk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import okhttp3.Call
@@ -43,7 +44,7 @@ class IdxClientConfiguration(
     val redirectUri: String,
 
     /** The Call.Factory which makes calls to the okta server. */
-    okHttpCallFactory: Call.Factory = defaultCallFactory(),
+    okHttpCallFactory: Call.Factory = OktaSdk.okHttpClient,
 
     /** The CoroutineDispatcher which should be used for IO bound tasks. */
     val ioDispatcher: CoroutineContext = Dispatchers.IO,
@@ -58,11 +59,6 @@ class IdxClientConfiguration(
     internal val json: Json = Json { ignoreUnknownKeys = true }
 
     companion object {
-        private fun defaultCallFactory(): Call.Factory {
-            return OkHttpClient.Builder()
-                .build()
-        }
-
         private fun addInterceptor(callFactory: Call.Factory): Call.Factory {
             if (callFactory is OkHttpClient) {
                 return callFactory.newBuilder()
