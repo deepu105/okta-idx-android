@@ -14,4 +14,11 @@
     <string name="welcome_to_oie_sample">Welcome to the Okta Samples for Android!</string>
     <string name="welcome_to_oie_sample_description">Congrats on starting this sample application in Android! This sample will demonstrate how to build views that facilitate some common authentication flows:\n• Sign In\n• Sign Up\n• Password Recovery\n• Logout\n\nTo get started, click the button below.</string>
     <string name="login">Login</string>
+    <string name="introspect_access_token">Introspect Access Token</string>
+    <string name="introspect_refresh_token">Introspect Refresh Token</string>
+    <string name="introspect_id_token">Introspect ID Token</string>
+    <string name="revoke_access_token">Revoke Access Token</string>
+    <string name="revoke_refresh_token">Revoke Refresh Token</string>
+    <string name="refresh_access_token">Refresh Access Token</string>
+    <string name="back_to_login">Go Back To Login Page</string>
 </resources>

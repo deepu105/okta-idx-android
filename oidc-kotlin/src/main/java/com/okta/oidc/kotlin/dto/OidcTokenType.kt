@@ -16,5 +16,5 @@
 package com.okta.oidc.kotlin.dto
 
 enum class OidcTokenType {
-    REFRESH_TOKEN, ACCESS_TOKEN
+    REFRESH_TOKEN, ACCESS_TOKEN, ID_TOKEN
 }

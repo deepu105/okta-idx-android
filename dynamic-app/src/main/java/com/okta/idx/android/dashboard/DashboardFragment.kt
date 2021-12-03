@@ -17,7 +17,6 @@ package com.okta.idx.android.dashboard
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.okta.idx.android.dynamic.R
@@ -25,6 +24,7 @@ import com.okta.idx.android.dynamic.databinding.FragmentDashboardBinding
 import com.okta.idx.android.dynamic.databinding.RowDashboardClaimBinding
 import com.okta.idx.android.util.BaseFragment
 import com.okta.idx.android.util.inflateBinding
+import com.okta.oidc.kotlin.dto.OidcTokenType
 
 internal class DashboardFragment : BaseFragment<FragmentDashboardBinding>(
     FragmentDashboardBinding::inflate
@@ -39,10 +39,6 @@ internal class DashboardFragment : BaseFragment<FragmentDashboardBinding>(
         binding.idToken.text = TokenViewModel.tokenResponse.idToken
         binding.scope.text = TokenViewModel.tokenResponse.scope
 
-        binding.signOutButton.setOnClickListener {
-            viewModel.logout()
-        }
-
         viewModel.userInfoLiveData.observe(viewLifecycleOwner) { userInfo ->
             binding.claimsTitle.visibility = if (userInfo.isEmpty()) View.GONE else View.VISIBLE
             for (entry in userInfo) {
@@ -54,23 +50,42 @@ internal class DashboardFragment : BaseFragment<FragmentDashboardBinding>(
             }
         }
 
-        viewModel.logoutStateLiveData.observe(viewLifecycleOwner) { state ->
+        binding.refreshAccessTokenButton.setOnClickListener {
+            viewModel.refresh(binding.refreshAccessTokenButton.id)
+        }
+
+        binding.introspectAccessTokenButton.setOnClickListener {
+            viewModel.introspect(binding.introspectAccessTokenButton.id, OidcTokenType.ACCESS_TOKEN)
+        }
+        binding.introspectRefreshTokenButton.setOnClickListener {
+            viewModel.introspect(binding.introspectRefreshTokenButton.id, OidcTokenType.REFRESH_TOKEN)
+        }
+        binding.introspectIdTokenButton.setOnClickListener {
+            viewModel.introspect(binding.introspectIdTokenButton.id, OidcTokenType.ID_TOKEN)
+        }
+
+        binding.revokeAccessTokenButton.setOnClickListener {
+            viewModel.revoke(binding.revokeAccessTokenButton.id, OidcTokenType.ACCESS_TOKEN)
+        }
+        binding.revokeRefreshTokenButton.setOnClickListener {
+            viewModel.revoke(binding.revokeRefreshTokenButton.id, OidcTokenType.REFRESH_TOKEN)
+        }
+
+        viewModel.requestStateLiveData.observe(viewLifecycleOwner) { state ->
+            val button = binding.root.findViewById<View>(viewModel.lastButtonId)
             when (state) {
-                DashboardViewModel.LogoutState.Failed -> {
-                    binding.signOutButton.isEnabled = true
-                    Toast.makeText(requireContext(), "Logout failed.", Toast.LENGTH_LONG).show()
+                DashboardViewModel.RequestState.Loading -> {
+                    button?.isEnabled = false
                 }
-                DashboardViewModel.LogoutState.Idle -> {
-                    binding.signOutButton.isEnabled = true
-                }
-                DashboardViewModel.LogoutState.Loading -> {
-                    binding.signOutButton.isEnabled = false
-                }
-                DashboardViewModel.LogoutState.Success -> {
-                    viewModel.acknowledgeLogoutSuccess()
-                    findNavController().navigate(DashboardFragmentDirections.dashboardToLogin())
+                is DashboardViewModel.RequestState.Result -> {
+                    button?.isEnabled = true
+                    binding.lastRequestInfo.text = state.text
                 }
             }
+        }
+
+        binding.backToLogin.setOnClickListener {
+            findNavController().navigate(DashboardFragmentDirections.dashboardToLogin())
         }
     }
 }

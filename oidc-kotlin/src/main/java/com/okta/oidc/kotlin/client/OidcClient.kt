@@ -103,6 +103,9 @@ class OidcClient internal constructor(
             OidcTokenType.REFRESH_TOKEN -> {
                 token = tokens.refreshToken ?: return OidcClientResult.Error(IllegalStateException("No refresh token."))
             }
+            OidcTokenType.ID_TOKEN -> {
+                return OidcClientResult.Error(IllegalStateException("Revoke Token doesn't support ID Token."))
+            }
         }
 
         val formBody = FormBody.Builder()
@@ -135,6 +138,10 @@ class OidcClient internal constructor(
             OidcTokenType.REFRESH_TOKEN -> {
                 token = tokens.refreshToken ?: return OidcClientResult.Error(IllegalStateException("No refresh token."))
                 tokenTypeHint = "refresh_token"
+            }
+            OidcTokenType.ID_TOKEN -> {
+                token = tokens.idToken ?: return OidcClientResult.Error(IllegalStateException("No ID token."))
+                tokenTypeHint = "id_token"
             }
         }
 

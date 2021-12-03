@@ -120,10 +120,58 @@
             />
 
         <Button
-            android:id="@+id/sign_out_button"
+            android:id="@+id/back_to_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sign_out"
+            android:text="@string/back_to_login"
+            />
+
+        <Button
+            android:id="@+id/introspect_access_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/introspect_access_token"
+            />
+
+        <Button
+            android:id="@+id/introspect_refresh_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/introspect_refresh_token"
+            />
+
+        <Button
+            android:id="@+id/introspect_id_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/introspect_id_token"
+            />
+
+        <Button
+            android:id="@+id/revoke_access_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/revoke_access_token"
+            />
+
+        <Button
+            android:id="@+id/revoke_refresh_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/revoke_refresh_token"
+            />
+
+        <Button
+            android:id="@+id/refresh_access_token_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/refresh_access_token"
+            />
+
+        <TextView
+            android:id="@+id/last_request_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             />
     </LinearLayout>
 </ScrollView>
