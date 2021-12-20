@@ -48,6 +48,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.iterator
 import com.okta.idx.android.dynamic.databinding.FormLabelBinding
 import com.okta.idx.android.dynamic.databinding.FormOptionNestedBinding
+import com.okta.oidc.kotlin.dto.OidcTokens
 
 internal class DynamicAuthFragment : BaseFragment<FragmentDynamicAuthBinding>(
     FragmentDynamicAuthBinding::inflate
@@ -73,7 +74,14 @@ internal class DynamicAuthFragment : BaseFragment<FragmentDynamicAuthBinding>(
                     addLoadingView()
                 }
                 is DynamicAuthState.Tokens -> {
-                    TokenViewModel._tokenResponse = state.tokenResponse
+                    TokenViewModel._tokens = OidcTokens(
+                        tokenType = state.tokenResponse.tokenType,
+                        expiresIn = state.tokenResponse.expiresIn,
+                        accessToken = state.tokenResponse.accessToken,
+                        scope = state.tokenResponse.scope,
+                        refreshToken = state.tokenResponse.refreshToken,
+                        idToken = state.tokenResponse.idToken,
+                    )
                     findNavController().navigate(DynamicAuthFragmentDirections.dynamicAuthToDashboard())
                 }
             }

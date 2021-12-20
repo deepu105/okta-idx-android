@@ -24,7 +24,6 @@ import com.okta.oidc.kotlin.client.OidcClient
 import com.okta.oidc.kotlin.client.OidcClientResult
 import com.okta.oidc.kotlin.client.OidcConfiguration
 import com.okta.oidc.kotlin.dto.OidcTokenType
-import com.okta.oidc.kotlin.dto.OidcTokens
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -55,16 +54,7 @@ internal class DashboardViewModel : ViewModel() {
                 }
                 is OidcClientResult.Success -> {
                     oidcClient = clientResult.result
-                    oidcClient?.storeTokens(
-                        OidcTokens(
-                            tokenType = TokenViewModel.tokenResponse.tokenType,
-                            expiresIn = TokenViewModel.tokenResponse.expiresIn,
-                            accessToken = TokenViewModel.tokenResponse.accessToken,
-                            scope = TokenViewModel.tokenResponse.scope,
-                            refreshToken = TokenViewModel.tokenResponse.refreshToken,
-                            idToken = TokenViewModel.tokenResponse.idToken,
-                        )
-                    )
+                    oidcClient?.storeTokens(TokenViewModel.tokens)
                     getUserInfo()
                 }
             }

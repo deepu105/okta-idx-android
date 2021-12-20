@@ -32,12 +32,12 @@ internal class DashboardFragment : BaseFragment<FragmentDashboardBinding>(
     private val viewModel: DashboardViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.tokenType.text = TokenViewModel.tokenResponse.tokenType
-        binding.expiresIn.text = TokenViewModel.tokenResponse.expiresIn.toString()
-        binding.accessToken.text = TokenViewModel.tokenResponse.accessToken
-        binding.refreshToken.text = TokenViewModel.tokenResponse.refreshToken
-        binding.idToken.text = TokenViewModel.tokenResponse.idToken
-        binding.scope.text = TokenViewModel.tokenResponse.scope
+        binding.tokenType.text = TokenViewModel.tokens.tokenType
+        binding.expiresIn.text = TokenViewModel.tokens.expiresIn.toString()
+        binding.accessToken.text = TokenViewModel.tokens.accessToken
+        binding.refreshToken.text = TokenViewModel.tokens.refreshToken
+        binding.idToken.text = TokenViewModel.tokens.idToken
+        binding.scope.text = TokenViewModel.tokens.scope
 
         viewModel.userInfoLiveData.observe(viewLifecycleOwner) { userInfo ->
             binding.claimsTitle.visibility = if (userInfo.isEmpty()) View.GONE else View.VISIBLE

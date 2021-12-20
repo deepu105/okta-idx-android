@@ -18,6 +18,7 @@ android {
         buildConfigField "String", 'ISSUER', "\"${oktaProperties.getProperty('issuer')}\""
         buildConfigField "String", 'CLIENT_ID', "\"${oktaProperties.getProperty('clientId')}\""
         buildConfigField "String", 'REDIRECT_URI', "\"${oktaProperties.getProperty('redirectUri')}\""
+        buildConfigField "String", 'END_SESSION_REDIRECT_URI', "\"${oktaProperties.getProperty('endSessionRedirectUri')}\""
 
         manifestPlaceholders = [
                 "oktaIdxRedirectScheme": parseScheme(oktaProperties.getProperty('redirectUri'))
@@ -72,6 +73,7 @@ dependencies {
     coreLibraryDesugaring deps.desugar_libs
 
     implementation project(':idx-kotlin')
+    implementation project(':browser-redirect')
 
     implementation deps.kotlin.stdlib
     implementation deps.core_ktx

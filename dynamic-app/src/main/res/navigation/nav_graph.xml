@@ -17,6 +17,13 @@
             app:popUpTo="@+id/nav_graph"
             app:popUpToInclusive="true"
             />
+
+        <action
+            android:id="@+id/launch_to_browser"
+            app:destination="@id/BrowserFragment"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true"
+            />
     </fragment>
 
     <fragment
@@ -26,6 +33,19 @@
         >
         <action
             android:id="@+id/dynamicAuth_to_dashboard"
+            app:destination="@id/DashboardFragment"
+            app:popUpTo="@+id/nav_graph"
+            app:popUpToInclusive="true"
+            />
+    </fragment>
+
+    <fragment
+        android:id="@+id/BrowserFragment"
+        android:name="com.okta.idx.android.browser.BrowserFragment"
+        tools:layout="@layout/fragment_browser"
+        >
+        <action
+            android:id="@+id/browser_to_dashboard"
             app:destination="@id/DashboardFragment"
             app:popUpTo="@+id/nav_graph"
             app:popUpToInclusive="true"

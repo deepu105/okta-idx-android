@@ -33,8 +33,8 @@ import okhttp3.Request
 
 // TODO: Document
 class OidcClient internal constructor(
-    private val configuration: OidcConfiguration,
-    private val tokenEndpoints: OidcTokenEndpoints,
+    val configuration: OidcConfiguration,
+    val endpoints: OidcEndpoints,
 ) {
     companion object {
         suspend fun create(
@@ -44,8 +44,7 @@ class OidcClient internal constructor(
             val request = Request.Builder()
                 .url(discoveryUrl)
                 .build()
-            val dtoResult =
-                configuration.performRequest<OidcTokenEndpoints>(request)
+            val dtoResult = configuration.performRequest<OidcEndpoints>(request)
             return when (dtoResult) {
                 is OidcClientResult.Error -> {
                     OidcClientResult.Error(dtoResult.exception)
@@ -62,7 +61,7 @@ class OidcClient internal constructor(
 
         val request = Request.Builder()
             .addHeader("authorization", "Bearer $accessToken")
-            .url(tokenEndpoints.userInfoEndpoint)
+            .url(endpoints.userInfoEndpoint)
             .build()
 
         return configuration.performRequest<JsonObject, OidcUserInfo>(request) {
@@ -81,7 +80,7 @@ class OidcClient internal constructor(
             .build()
 
         val request = Request.Builder()
-            .url(tokenEndpoints.tokenEndpoint)
+            .url(endpoints.tokenEndpoint)
             .post(formBody)
             .build()
 
@@ -114,7 +113,7 @@ class OidcClient internal constructor(
             .build()
 
         val request = Request.Builder()
-            .url(tokenEndpoints.revocationEndpoint)
+            .url(endpoints.revocationEndpoint)
             .post(formBody)
             .build()
 
@@ -152,7 +151,7 @@ class OidcClient internal constructor(
             .build()
 
         val request = Request.Builder()
-            .url(tokenEndpoints.introspectionEndpoint)
+            .url(endpoints.introspectionEndpoint)
             .post(formBody)
             .build()
 

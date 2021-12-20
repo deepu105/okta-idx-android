@@ -21,4 +21,5 @@
     <string name="revoke_refresh_token">Revoke Refresh Token</string>
     <string name="refresh_access_token">Refresh Access Token</string>
     <string name="back_to_login">Go Back To Login Page</string>
+    <string name="login_with_browser">Login with browser</string>
 </resources>

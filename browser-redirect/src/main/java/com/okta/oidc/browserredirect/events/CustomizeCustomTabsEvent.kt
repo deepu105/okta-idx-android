@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.idx.android.dashboard
+package com.okta.oidc.browserredirect.events
 
-import com.okta.oidc.kotlin.dto.OidcTokens
+import android.content.Context
+import androidx.browser.customtabs.CustomTabsIntent
 
-internal object TokenViewModel {
-    var _tokens: OidcTokens? = null
-
-    val tokens: OidcTokens
-        get() {
-            return _tokens!!
-        }
-}
+// TODO: Document
+class CustomizeCustomTabsEvent internal constructor(
+    val context: Context,
+    val intentBuilder: CustomTabsIntent.Builder,
+)

@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.idx.android.dashboard
+package com.okta.oidc.kotlin.events
 
-import com.okta.oidc.kotlin.dto.OidcTokens
-
-internal object TokenViewModel {
-    var _tokens: OidcTokens? = null
-
-    val tokens: OidcTokens
-        get() {
-            return _tokens!!
-        }
+// TODO: Document
+interface EventHandler {
+    fun onEvent(event: Any)
 }

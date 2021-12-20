@@ -30,5 +30,9 @@ internal class LaunchFragment : BaseFragment<FragmentLaunchBinding>(
         binding.loginButton.setOnClickListener {
             findNavController().navigate(LaunchFragmentDirections.launchToDynamic())
         }
+
+        binding.loginWithBrowserButton.setOnClickListener {
+            findNavController().navigate(LaunchFragmentDirections.launchToBrowser())
+        }
     }
 }

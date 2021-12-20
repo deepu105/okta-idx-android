@@ -36,13 +36,6 @@ class OidcConfiguration(
     /** The access scopes required by the client. */
     val scopes: Set<String>,
 
-    // TODO: Figure out if these are needed.
-//    /** The application's redirect URI. */
-//    val redirectUri: String,
-//
-//    /** The application's end session redirect URI. */
-//    val endSessionRedirectUri: String,
-
     /** The Call.Factory which makes calls to the okta server. */
     okHttpCallFactory: Call.Factory = OktaSdk.okHttpClient,
 

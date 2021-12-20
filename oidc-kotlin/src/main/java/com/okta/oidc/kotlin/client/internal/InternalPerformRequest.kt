@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.idx.android.dashboard
+package com.okta.oidc.kotlin.client.internal
 
+import com.okta.oidc.kotlin.client.OidcClient
+import com.okta.oidc.kotlin.client.OidcClientResult
 import com.okta.oidc.kotlin.dto.OidcTokens
+import com.okta.oidc.kotlin.util.performRequest
+import okhttp3.Request
 
-internal object TokenViewModel {
-    var _tokens: OidcTokens? = null
-
-    val tokens: OidcTokens
-        get() {
-            return _tokens!!
-        }
+suspend fun OidcClient.internalTokenRequest(
+    request: Request,
+): OidcClientResult<OidcTokens> {
+    return configuration.performRequest(request)
 }

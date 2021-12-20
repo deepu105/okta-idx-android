@@ -15,9 +15,12 @@
  */
 package com.okta.oidc
 
+import com.okta.oidc.kotlin.events.EventCoordinator
 import okhttp3.Call
 import okhttp3.OkHttpClient
 
 object OktaSdk {
     var okHttpClient: Call.Factory by OneTimeSetOrLazyGet { OkHttpClient() }
+
+    var eventCoordinator: EventCoordinator by OneTimeSetOrLazyGet { EventCoordinator(emptyList()) }
 }

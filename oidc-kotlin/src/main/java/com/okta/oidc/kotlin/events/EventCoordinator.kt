@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.idx.android.dashboard
+package com.okta.oidc.kotlin.events
 
-import com.okta.oidc.kotlin.dto.OidcTokens
+// TODO: Document.
+class EventCoordinator(eventHandlers: List<EventHandler>) {
+    private val eventHandlers = ArrayList(eventHandlers) // Make a defensive copy.
 
-internal object TokenViewModel {
-    var _tokens: OidcTokens? = null
+    constructor(eventHandler: EventHandler) : this(listOf(eventHandler)) {
+    }
 
-    val tokens: OidcTokens
-        get() {
-            return _tokens!!
+    fun sendEvent(event: Any) {
+        for (eventHandler in eventHandlers) {
+            eventHandler.onEvent(event)
         }
+    }
 }

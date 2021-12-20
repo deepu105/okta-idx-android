@@ -32,10 +32,10 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 // TODO: Documentation
 @Serializable
 // TODO: Move these into another class that maps to this.
-class OidcTokenEndpoints(
+class OidcEndpoints(
     @SerialName("issuer") internal val issuer: HttpUrl,
-    @SerialName("authorization_endpoint") internal val authorizationEndpoint: HttpUrl,
-    @SerialName("token_endpoint") internal val tokenEndpoint: HttpUrl,
+    @SerialName("authorization_endpoint") public val authorizationEndpoint: HttpUrl,
+    @SerialName("token_endpoint") public val tokenEndpoint: HttpUrl,
     @SerialName("userinfo_endpoint") internal val userInfoEndpoint: HttpUrl,
     @SerialName("jwks_uri") internal val jwksUri: HttpUrl,
     @SerialName("registration_endpoint") internal val registrationEndpoint: HttpUrl,

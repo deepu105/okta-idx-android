@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.okta.idx.android.dashboard
+package com.okta.oidc.browserredirect.events
 
-import com.okta.oidc.kotlin.dto.OidcTokens
-
-internal object TokenViewModel {
-    var _tokens: OidcTokens? = null
-
-    val tokens: OidcTokens
-        get() {
-            return _tokens!!
-        }
+// TODO: Document
+class CustomizeBrowserEvent internal constructor(
+    var queryIntentServicesFlags: Int = 0,
+    val preferredBrowsers: MutableList<String> = mutableListOf(CHROME_STABLE, CHROME_SYSTEM, CHROME_BETA)
+) {
+    private companion object {
+        private const val CHROME_STABLE = "com.android.chrome"
+        private const val CHROME_SYSTEM = "com.google.android.apps.chrome"
+        private const val CHROME_BETA = "com.android.chrome.beta"
+    }
 }
